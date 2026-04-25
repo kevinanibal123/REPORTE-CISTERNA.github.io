@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Cisternas de Agua</title>
+  <style>
+    /* Mismo formato de color y estilo que me enviaste */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #ecf0f3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #003366;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #003366;
+      font-family: pragmatica-extended-bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 12px;
+      color: #003366;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    /* Mismo Grid que el de combustible */
+    .grid-maquinas {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* Tus botones amarillos exactos */
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 10px;
+      background-color: #f9cd00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #002752;
+    }
+
+    /* Ajuste para celulares */
+    @media screen and (max-width: 480px) {
+      .grid-maquinas {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Botón de volver al final */
+    .btn-volver {
+      margin-top: 30px;
+      background-color: #003366;
+      max-width: 200px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>GEOTEC</h1>
+  <h2>Seleccione una cisterna de AGUA para iniciar el reporte</h2>
+
+  <div class="grid-maquinas">
+    <a href="Cisterna de Agua 1309.html"><button>Cisterna de Agua 1309</button></a>
+    <a href="Cisterna de Agua 2313.html"><button>Cisterna de Agua 2313</button></a>
+    <a href="Cisterna de Agua 2319.html"><button>Cisterna de Agua 2319</button></a>
+    <a href="Cisterna de Agua 821.html"><button>Cisterna de Agua 821</button></a>
+    <a href="Cisterna de Agua 1434.html"><button>Cisterna de Agua 1434</button></a>
+    <a href="Cisterna de Agua 823.html"><button>Cisterna de Agua 823</button></a>
+  </div>
+
+  <a href="index.html" style="width: 100%; max-width: 200px;">
+    <button class="btn-volver">VOLVER AL INICIO</button>
+  </a>
+
+</body>
+</html>

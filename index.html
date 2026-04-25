@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pantalla Principal</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #ecf0f3;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #003366;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #003366;
+      font-family: pragmatica-extended-bold;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 11px;
+      color: #003366;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .login-form {
+      width: 300px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px;
+      font-size: 18px;
+      background-color: #f9cd00;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    button:hover {
+      background-color: #002752;
+    }
+
+    /* Contenedor para los nuevos botones de reporte */
+    #opcionesReporte {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    /* Estilo para los botones de reporte para que se diferencien un poco */
+    .btn-opcion {
+      background-color: #003366; /* Azul para variar del amarillo principal */
+      font-size: 16px;
+    }
+
+    @media screen and (max-width: 400px) {
+      h1 { font-size: 24px; }
+      h2 { font-size: 10px; }
+      input, button { font-size: 16px; padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>GEOTEC</h1>
+  <h2>Soluciones para la industria minera</h2>
+
+  <div class="login-form">
+    <button onclick="mostrarOpciones()">Ingresar</button>
+
+    <div id="opcionesReporte">
+      <button class="btn-opcion" onclick="irA('combustible')">Cisterna Combustible</button>
+      <button class="btn-opcion" onclick="irA('agua')">Cisterna de Agua</button>
+    </div>
+
+    <button onclick="mostrarCampoAdmin()">Administrador</button>
+
+    <div id="adminAcceso" style="display:none; width:100%; flex-direction: column; gap: 10px;">
+      <input type="password" id="claveAdmin" placeholder="Contraseña administrador">
+      <button onclick="validarAdministrador()">Acceder</button>
+    </div>
+  </div>
+
+  <script>
+    function mostrarOpciones() {
+      const opciones = document.getElementById("opcionesReporte");
+      if (opciones.style.display === "flex") {
+        opciones.style.display = "none";
+      } else {
+        opciones.style.display = "flex";
+        document.getElementById("adminAcceso").style.display = "none";
+      }
+    }
+
+    function irA(tipo) {
+      if (tipo === 'combustible') {
+        window.location.href = "panelcisternas.html";
+      } else {
+        window.location.href = "panelagua.html";
+      }
+    }
+
+    function mostrarCampoAdmin() {
+      const admin = document.getElementById("adminAcceso");
+      admin.style.display = "flex";
+      document.getElementById("opcionesReporte").style.display = "none";
+    }
+
+    function validarAdministrador() {
+      const clave = document.getElementById("claveAdmin").value.trim();
+      
+      if (clave === "kevinacuña") {
+        sessionStorage.setItem("adminValido", "true");
+        window.location.href = "admin-panel.html";
+      } else {
+        alert("Contraseña incorrecta ❌");
+        document.getElementById("claveAdmin").value = "";
+      }
+    }
+  </script>
+</body>
+</html>

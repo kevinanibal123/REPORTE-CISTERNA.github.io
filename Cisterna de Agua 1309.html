@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1200, initial-scale=1.0"/>
+    <title>Control de Agua - Cisterna de Agua 1309</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background-color: #ecf0f3;
+            color: #003366;
+            min-width: 1200px;
+        }
+        h1 { text-align: center; margin: 10px 0; font-size: 24px; }
+        .buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
+        .btn {
+            background-color: #f9cd00; color: white; padding: 12px 20px;
+            border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold;
+        }
+        #reporte {
+            width: 1150px; margin: auto; background: white; padding: 20px; box-sizing: border-box;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
+        th, td { border: 1px solid #aaa; padding: 6px; text-align: left; }
+        th { background-color: #dde6f3; }
+        input, select, textarea {
+            width: 100%; font-size: 11px !important; border: none;
+            background: transparent; color: #003366; height: 25px;
+        }
+        input[readonly] { background-color: #f0f0f0; }
+        
+        @media print {
+            .buttons, button { display: none !important; }
+            body { min-width: 100%; }
+            #reporte { width: 100%; border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>💧 Reporte Cisterna de Agua - 1309</h1>
+
+    <div class="buttons">
+        <button class="btn" id="btnPDF">📄 PDF / ENVIAR REPORTE</button>
+        <button class="btn" style="background-color: #003366;" onclick="window.location.href='panelagua.html'">🔙 VOLVER</button>
+    </div>
+
+    <div id="reporte">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <div style="font-size:28px; font-weight:bold; color:#f9cd00">GEOTEC</div>
+            <div style="text-align:center; font-weight:bold; color:#003366; font-size:18px">CONTROL DIARIO DE AGUA</div>
+            <div style="font-size:12px; font-weight:600; color:#003366;">PROYECTO: LAS BAMBAS</div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; gap: 20px; margin-bottom: 20px;">
+            <table style="width: 100%; max-width: 400px;">
+                <tr>
+                    <th style="width: 40%;">CONDUCTOR</th>
+                    <td><input type="text" id="mainConductor" oninput="sincronizar()"></td>
+                </tr>
+                <tr>
+                    <th>FECHA</th>
+                    <td><input type="date" id="mainFecha" oninput="sincronizar()"></td>
+                </tr>
+                <tr>
+                    <th>ZONA</th>
+                    <td><input type="text" id="mainZona" oninput="sincronizar()"></td>
+                </tr>
+            </table>
+
+            <table style="width: 35%; min-width: 280px; flex-shrink: 0; font-size: 10px; border-collapse: collapse;">     
+                <tr>
+                    <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">TURNO</th>
+                    <td style="border: 1px solid #aaa;">
+                        <select id="mainTurno" onchange="sincronizar()" style="width: 100%; height: 40px; display: block; border: none; background: transparent; text-align: center;">
+                            <option value="DIA">DIA</option>
+                            <option value="NOCHE">NOCHE</option>
+                        </select>
+                    </td>
+                </tr>    
+                <tr>
+                    <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">PLACA</th>
+                    <td style="border: 1px solid #aaa;">
+                        <input type="text" id="mainPlaca" oninput="sincronizar()" style="text-align: center; height: 40px; width: 100%; display: block; border: none; background: transparent;">
+                    </td>
+                </tr>
+                <tr>
+                    <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">CODIGO CISTERNA</th>
+                    <td style="border: 1px solid #aaa;">
+                        <input type="text" id="mainID" oninput="sincronizar()" style="text-align: center; height: 40px; width: 100%; display: block; border: none; background: transparent;">
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="scroll-x">
+            <table id="tablaEntregas">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;">Empresa</th>
+                        <th style="text-align: center;">Codigo</th>
+                        <th style="text-align: center;">Placa</th>
+                        <th style="text-align: center;">Fecha</th>
+                        <th style="text-align: center;">Turno</th>
+                        <th style="text-align: center;">Procedencia</th>
+                        <th style="text-align: center;">Cant. Entregada</th>
+                        <th style="text-align: center;">Comentarios / Destino</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="6" style="text-align: right; font-weight: bold; background:#eee;">TOTAL GALONES ENTREGADOS</td>
+                        <td style="background:#fffef5;"><input type="number" id="totalEntregado" readonly style="font-weight:bold;"></td>
+                        <td style="background:#eee;"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start;">
+            <div style="width: 60%;">
+                <label style="font-size:11px; font-weight:bold;">OBSERVACIONES:</label>
+                <textarea id="obs" style="border: 1px solid #aaa; height: 80px; margin-top:5px; padding:5px; background:white; width:100%;"></textarea>
+            </div>
+            <div style="text-align: center;">
+                <canvas id="firmaCanvas" width="300" height="100" style="border:1px solid #ccc; background:#fff;"></canvas>
+                <p style="margin:5px 0; font-size:11px; font-weight:bold;">FIRMA DEL CONDUCTOR</p>
+                <button onclick="limpiarFirma()" style="font-size:10px;">Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const cuerpo = document.getElementById('cuerpoTabla');
+        for(let i=0; i<10; i++) {
+            cuerpo.innerHTML += `
+                <tr>
+                    <td><input type="text" class="col-empresa" value="GEOTEC"></td>
+                    <td><input type="text" class="col-id" readonly></td>
+                    <td><input type="text" class="col-placa" readonly></td>
+                    <td><input type="text" class="col-fecha" readonly></td>
+                    <td><input type="text" class="col-turno" readonly></td>
+                    <td><input type="text" class="col-zona" readonly></td>
+                    <td><input type="number" class="galones" oninput="calcularTodo()"></td>
+                    <td><input type="text" placeholder="..."></td>
+                </tr>
+            `;
+        }
+
+        function sincronizar() {
+            const fecha = document.getElementById('mainFecha').value;
+            const turno = document.getElementById('mainTurno').value;
+            const zona = document.getElementById('mainZona').value.toUpperCase();
+            const codigo = document.getElementById('mainID').value.trim();
+
+            const basePlacas = {
+                "1309": "VDH-880",
+                "2313": "VDI-825",
+                "2319": "VBQ-991",
+                "821": "BUZ-873",
+                "1434": "BUZ-874",
+                "823": "VBO-933"
+            };
+
+            // Lógica corregida: Si el código existe se pone la placa, sino se queda vacío
+            if (basePlacas[codigo]) {
+                document.getElementById('mainPlaca').value = basePlacas[codigo];
+            } else {
+                document.getElementById('mainPlaca').value = "";
+            }
+
+            const placa = document.getElementById('mainPlaca').value.toUpperCase();
+
+            document.querySelectorAll('.col-fecha').forEach(i => i.value = fecha);
+            document.querySelectorAll('.col-turno').forEach(i => i.value = turno);
+            document.querySelectorAll('.col-zona').forEach(i => i.value = zona);
+            document.querySelectorAll('.col-placa').forEach(i => i.value = placa);
+            document.querySelectorAll('.col-id').forEach(i => i.value = codigo.toUpperCase());
+            
+            document.getElementById('mainConductor').value = document.getElementById('mainConductor').value.toUpperCase();
+            document.getElementById('mainZona').value = document.getElementById('mainZona').value.toUpperCase();
+        }
+
+        function calcularTodo() {
+            let total = 0;
+            document.querySelectorAll('.galones').forEach(i => total += parseFloat(i.value) || 0);
+            document.getElementById('totalEntregado').value = total.toFixed(2);
+        }
+
+        const canvas = document.getElementById('firmaCanvas');
+        const ctx = canvas.getContext('2d');
+        let dibujando = false;
+        const eventos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+            return {x, y};
+        }
+        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(eventos(e).x, eventos(e).y); });
+        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(eventos(e).x, eventos(e).y); ctx.stroke(); } });
+        window.addEventListener('mouseup', () => dibujando = false);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); dibujando = true; ctx.beginPath(); ctx.moveTo(eventos(e).x, eventos(e).y); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(dibujando) { ctx.lineTo(eventos(e).x, eventos(e).y); ctx.stroke(); } });
+        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        document.getElementById("btnPDF").addEventListener("click", () => {
+            const { jsPDF } = window.jspdf;
+            html2canvas(document.getElementById("reporte"), { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF("l", "mm", "a4");
+                const width = pdf.internal.pageSize.getWidth();
+                const height = (canvas.height * width) / canvas.width;
+                pdf.addImage(imgData, "PNG", 0, 5, width, height);
+                pdf.save(`Reporte_Agua_1309_${document.getElementById('mainFecha').value}.pdf`);
+            });
+        });
+
+        document.getElementById('mainFecha').value = new Date().toISOString().split('T')[0];
+        sincronizar();
+
+        // SEGURIDAD
+        window.onbeforeunload = function() {
+            return "Si aceptas, la página se actualizará y se borrarán todos los datos del reporte.";
+        };
+
+        window.addEventListener("keydown", function(e) {
+            if ((e.which || e.keyCode) == 116 || (e.ctrlKey && (e.which || e.keyCode) == 82)) {
+                if (!confirm("⚠️ ADVERTENCIA: Si actualizas la página se borrarán todos los datos ingresados. ¿Deseas continuar?")) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById("btnPDF").addEventListener("click", () => {
+                let actual = window.onbeforeunload;
+                window.onbeforeunload = null;
+                setTimeout(() => { window.onbeforeunload = actual; }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Cisternas de Combustible</title>
+  <style>
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #ecf0f3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      color: #003366;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #003366;
+      font-family: pragmatica-extended-bold;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 12px;
+      color: #003366;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .grid-maquinas {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      font-size: 10px;
+      background-color: #f9cd00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    button:hover {
+      background-color: #002752;
+    }
+
+    @media screen and (max-width: 480px) {
+      .grid-maquinas {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .inoperativa {
+  background-color: #d60000;
+  color: white;
+  font-weight: bold;
+}
+  </style>
+</head>
+<body>
+
+  <h1>GEOTEC</h1>
+  <h2>Seleccione una máquina para iniciar el reporte</h2>
+
+  <div class="grid-maquinas">
+    <a href="Cisterna 2352.html"><button>Cisterna 2352</button></a>
+    <a href="Cisterna 1924.html"><button>Cisterba 1924</button></a>
+    <a href="Cisterna 685.html"><button>Cisterna 685</button></a>
+    <a href="Cisterna 1179.html"><button>Cisterna 1179</button></a>
+<script>
+
+   // 2. Lógica para auto-completar y LIMPIEZA TOTAL
+document.addEventListener("input", (e) => {
+  // Solo actuamos si el cambio es en un input con la clase "codigo"
+  if (e.target.classList.contains("codigo")) {
+    const inputCodigo = e.target;
+    const fila = inputCodigo.closest("tr");
+    const codigo = inputCodigo.value.trim();
+
+    // Buscamos TODOS los campos que queremos limpiar en esta fila
+    const campoEmpresa = fila.querySelector(".empresa");
+    const campoMaquina = fila.querySelector(".maquina");
+    const campoSondaje = fila.querySelector(".sondaje"); // O .placa según tu clase
+    const campoPlaca = fila.querySelector(".placa");
+
+    // Verificamos en la base de datos
+    if (datosPorCodigo[codigo]) {
+      const datos = datosPorCodigo[codigo];
+      // Si el código existe, llenamos todo
+      if (campoEmpresa) campoEmpresa.value = datos.empresa;
+      if (campoMaquina) campoMaquina.value = datos.maquina;
+      if (campoSondaje) campoSondaje.value = datos.sondaje;
+      if (campoPlaca) campoPlaca.value = datos.sondaje; // Usamos el dato de sondaje para placa
+    } else {
+      // SI EL CÓDIGO NO ES CORRECTO: Borramos TODO de inmediato
+      if (campoEmpresa) campoEmpresa.value = "";
+      if (campoMaquina) campoMaquina.value = "";
+      if (campoSondaje) campoSondaje.value = "";
+      if (campoPlaca) campoPlaca.value = "";
+      
+      // Si tienes texto que no es input (solo texto en la celda), esto lo limpia:
+      // fila.cells[0].innerText = ""; // Solo usar si no son inputs
+    }
+  }
+});
+
+  // 3. Lógica de Autoguardado (LocalStorage)
+  const camposAutoGuardar = ["zona1", "fecha", "zona2", "zona3", "turno", "observaciones"];
+
+  camposAutoGuardar.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      // Carga lo que estaba guardado
+      el.value = localStorage.getItem(id) || "";
+      
+      // Guarda cada vez que escribes
+      el.addEventListener("input", () => {
+        localStorage.setItem(id, el.value);
+      });
+    }
+  });
+</script>
+</body>
+</html>

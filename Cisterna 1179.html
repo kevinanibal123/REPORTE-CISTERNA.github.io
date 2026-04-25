@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reporte de combustible</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: #ecf0f3;
+      color: #003366;
+    }
+    h1 {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 30px;
+    }
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .btn {
+      background-color: #f9cd00;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background-color: #002752;
+    }
+    #reporte {
+      width: 1200px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 10px;
+      table-layout: fixed;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 0px 4px;
+      text-align: left;
+    }
+    th {
+      background-color: #dde6f3;
+    }
+    input, textarea, select {
+      width: 100%;
+      font-size: 9px !important;
+      border: none;
+      background: transparent;
+      color: #003366;
+      box-sizing: border-box;
+      display: block;
+      line-height: 1.2;
+      height: 25px;
+    }
+    input:focus {
+      outline: 2px solid #f9cd00;
+      background-color: #fffef5;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>⛽ Control de Combustible- 1179</h1>
+  <div class="buttons">
+    <button class="btn" id="btnPDF">📄 ENVIAR REPORTE Y DESCARGAR PDF</button>
+  </div>
+
+  <div id="reporte">
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <div style="font-size:30px; font-weight:bold; color:#f9cd00">GEOTEC</div>
+      <div style="text-align:center; font-weight:bold; color:#003366; font-size:22px">CONTROL DIARIO DE COMBUSTIBLE</div>
+      <div style="font-size:14px; font-weight:600; color:#003366;">UNIDAD: Las Bambas-2026</div>
+    </div>
+
+    <div style="display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: flex-start; width: 100%;">
+      
+      <table style="width: 40%; min-width: 350px; flex-shrink: 0; border-collapse: collapse;">
+          <tr>
+            <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">CONDUCTOR</th>
+            <td style="border: 1px solid #aaa;"><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+          </tr>      
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">STOCK ANTERIOR</th>
+              <td style="border: 1px solid #aaa;"><input type="number" id="stockAnterior" style="text-align: center;"></td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">GRIFO</th>
+              <td style="border: 1px solid #aaa;"><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">INGRESO GRIFO</th>
+              <td style="border: 1px solid #aaa;"><input type="number" id="ingresoGrifo" style="text-align: center;"></td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">STOCK INICIAL</th>
+              <td style="border: 1px solid #aaa;"><input type="number" id="stockInicial" readonly style="font-weight: bold; background-color: #fffef5; text-align: right;"></td>
+          </tr>
+      </table>
+
+      <table style="width: 30%; min-width: 280px; flex-shrink: 0; border-collapse: collapse;">
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">FECHA</th>
+              <td style="border: 1px solid #aaa;"><input type="date" style="text-align: center;"></td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">TURNO</th>
+              <td style="border: 1px solid #aaa;">
+              <select id="turnoMain" style="font-weight: bold; cursor: pointer; text-align: center; text-align-last: center;">
+                <option value="DIA">☀️ DIA</option>
+                <option value="NOCHE">🌙 NOCHE</option>
+              </select>
+              </td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">PLACA CISTERNA</th>
+              <td style="border: 1px solid #aaa;"><input type="text" oninput="this.value = this.value.toUpperCase()" style="text-align: center;"></td>
+          </tr>
+          <tr>
+              <th style="text-align: left; border: 1px solid #aaa; padding: 4px;">CÓDIGO MINA</th>
+              <td style="border: 1px solid #aaa;"><input type="text" oninput="this.value = this.value.toUpperCase()" style="text-align: center;"></td>
+          </tr>
+      </table>
+    </div> 
+
+    <div style="margin-top: 30px;"></div>
+
+    <table id="tablaMaestra" style="width: 100%; min-width: 1000px; border-collapse: collapse;">
+        <thead>
+            <tr>          
+              <th style="width:10%; text-align: center;">EMPRESA</th>
+              <th style="width:12%; text-align: center;">MAQUINA</th>
+              <th style="width:6%; text-align: center;">CODIGO</th>
+              <th style="width:14%; text-align: center;">SONDAJE</th>
+              <th style="width:17%; text-align: center;">AREA PERFORACIÓN</th>          
+              <th style="width:5%; text-align: center;">GALONES</th>
+              <th style="width:8%; text-align: center;">HOROMETRO</th>
+              <th style="width:15%; text-align: center;">PERFORISTA</th>        
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ PERFORADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>          
+              <th style="text-align: center;">EMPRESA</th>
+              <th style="text-align: center;">EQUIPO</th>
+              <th style="text-align: center;">CODIGO</th>
+              <th style="text-align: center;">PLACA</th>
+              <th style="text-align: center;">UBICACIÓN / COMENTARIO</th>          
+              <th style="text-align: center;">GALONES</th>
+              <th style="text-align: center;">HOROMETRO</th>
+              <th style="text-align: center;">CONDUCTOR</th>          
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="maquina" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>      
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>       
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="LUMINARIA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr><td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ SOLDADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MAQ SOLDADORA"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="GENERADOR ALMACÉN"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+              <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="GENERADOR ALMACÉN"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>        
+            <tr>
+            <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MOTOBOMBA LISTER"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+            <tr>
+            <td><input type="text" class="empresa" value="GEOTEC"></td>
+              <td><input type="text" class="maquina" value="MOTOBOMBA LISTER"></td>
+              <td><input type="text" class="codigo" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" class="sondaje" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+              <td><input type="number" class="galones"></td>
+              <td><input type="number"></td>
+              <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+            </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="5" style="text-align: right; font-weight: bold; padding-right: 25px;">TOTAL GALONES</td>
+            <td><input type="number" id="totalGalones" readonly style="font-weight:bold;"></td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+    </table>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start;">
+      <table style="width: 30%;">
+        <tr>
+          <th>SALIDA GEOTEC</th>
+          <td><input type="number" id="salidaGeotec" value="0"></td>
+        </tr>
+        <tr>
+          <th>OTRAS SALIDAS</th>
+          <td><input type="number" id="otrasSalidas" value="0"></td>
+        </tr>
+        <tr>
+          <th>TOTAL</th>
+          <td><input type="number" id="totalConsumoFinal" readonly style="font-weight:bold;"></td>
+        </tr>
+        <tr>
+          <th style="background-color: #f9cd00; color: white;">STOCK FINAL</th>
+          <td><input type="number" id="stockFinal" readonly style="font-weight:bold; background-color: #e8f5e9;"></td>
+        </tr>
+      </table>
+
+      <div style="text-align: center;">
+        <canvas id="firmaCanvas" width="300" height="100" style="border:1px solid #ccc; background:#fff;"></canvas>
+        <p style="margin:5px 0 0 0; font-size:12px;">Firma Responsable</p>
+        <button onclick="limpiarFirma()" style="font-size:10px;">Limpiar Firma</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lógica de Autocompletado con la flota completa de la imagen
+const datosPorCodigo = {
+    // --- CISTERNAS COMBUSTIBLE (Anteriores) ---
+    "1924": { empresa: "GEOTEC", maquina: "CISTERNA COMBUSTIBLE", sondaje: "BKN-740" },
+    "1179": { empresa: "GEOTEC", maquina: "CISTERNA COMBUSTIBLE", sondaje: "BTG-863" },
+    "2352": { empresa: "ECOSEM", maquina: "CISTERNA COMBUSTIBLE", sondaje: "VAU-744" },
+
+    // --- CAMIONES GRÚA ---
+    "667":  { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "BPM-761" },
+    "2086": { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "CEP-903" },
+    "1722": { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "AZS-788" },
+    "839":  { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "VCU-845" },
+    "1200": { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "BSQ-770" },
+    "2313": { empresa: "GEOTEC", maquina: "CAMIÓN GRÚA", sondaje: "VDI-825" },
+
+    // --- CAMIONETAS ---
+    "1343": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5T-734" },
+    "2320": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "CAQ-775" },
+    "2317": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5W-050" },
+    "2312": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VDM-901" },
+    "2321": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5S-878" },
+    "835":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5O-393" },
+    "1048": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5W-834" },
+    "740":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VCJ-491" },
+    "1547": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VDY-940" },
+    "1921": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5X-748" },
+    "2276": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X6A-879" },
+    "2269": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VEI-801" },
+    "2458": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VDO-907" },
+    "2478": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VEK-895" },
+    "2485": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5T-832" },
+    "1372": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X6A-817" },
+    "698":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VEV-842" },
+    "872":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VEY-890" },
+    "885":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X6F-897" },
+    "779":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5W-795" },
+    "2318": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "Z7V-081" },
+    "827":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VEB-947" },
+    "873":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X6E-821" },
+    "1947": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5T-102" },
+    "834":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5K-779" },
+    "826":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5U-844" },
+    "1393": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5A-770" },
+    "1453": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5P-460" },
+    "1709": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "BVS-838" },
+    "614":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5P-444" },
+    "1546": { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "X5I-708" },
+    "822":  { empresa: "GEOTEC", maquina: "CAMIONETA", sondaje: "VBL-887" },
+
+    // --- CISTERNAS DE AGUA ---
+    "1309": { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "VDH-880" },
+    "2313": { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "VDI-825" },
+    "2319": { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "VBQ-991" },
+    "821":  { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "BUZ-873" },
+    "1434": { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "BUZ-874" },
+    "823":  { empresa: "GEOTEC", maquina: "CISTERNA DE AGUA", sondaje: "VBO-933" },
+
+    // --- OTROS ---
+    "X6E-275": { empresa: "GEOTEC", maquina: "MINIBUS", sondaje: "X6E-275" },
+    "X6E-475": { empresa: "GEOTEC", maquina: "MINIBUS", sondaje: "X6E-475" },
+    "CCC-927": { empresa: "GEOTEC", maquina: "OMNIBUS", sondaje: "CCC-927" },
+    "CFI-352": { empresa: "GEOTEC", maquina: "OMNIBUS", sondaje: "CFI-352" }
+};
+
+    document.querySelectorAll("#tablaMaestra tbody tr").forEach(fila => {
+      const inCod = fila.querySelector(".codigo");
+      const inMaq = fila.querySelector(".maquina");
+      const inSon = fila.querySelector(".sondaje");
+      const inEmp = fila.querySelector(".empresa");
+
+      if (inCod) {
+        inCod.addEventListener("input", () => {
+          const val = inCod.value.trim().toUpperCase();
+          if (datosPorCodigo[val]) {
+            if(inMaq) inMaq.value = datosPorCodigo[val].maquina;
+            if(inSon) inSon.value = datosPorCodigo[val].sondaje;
+            if(inEmp) inEmp.value = datosPorCodigo[val].empresa;
+          } else {
+            if(inMaq && inMaq.getAttribute('value') === null) inMaq.value = "";
+            if(inSon) inSon.value = "";
+            if(inEmp && inEmp.getAttribute('value') === null) inEmp.value = "";
+          }
+        });
+      }
+    });
+
+    function calcularTodoElStock() {
+      const ant = parseFloat(document.getElementById('stockAnterior').value) || 0;
+      const ing = parseFloat(document.getElementById('ingresoGrifo').value) || 0;
+      const stIni = ant + ing;
+      document.getElementById('stockInicial').value = stIni.toFixed(2);
+
+      let totalG = 0;
+      document.querySelectorAll('.galones').forEach(i => totalG += parseFloat(i.value) || 0);
+      document.getElementById('totalGalones').value = totalG.toFixed(2);
+
+      const sGeo = parseFloat(document.getElementById('salidaGeotec').value) || 0;
+      const oSal = parseFloat(document.getElementById('otrasSalidas').value) || 0;
+      const tCon = totalG + sGeo + oSal;
+      document.getElementById('totalConsumoFinal').value = tCon.toFixed(2);
+      document.getElementById('stockFinal').value = (stIni - tCon).toFixed(2);
+    }
+
+    document.addEventListener('input', calcularTodoElStock);
+
+    const canvas = document.getElementById('firmaCanvas');
+    const ctx = canvas.getContext('2d');
+    let dib = false;
+    canvas.addEventListener('mousedown', () => dib = true);
+    window.addEventListener('mouseup', () => { dib = false; ctx.beginPath(); });
+    canvas.addEventListener('mousemove', (e) => {
+      if (!dib) return;
+      const r = canvas.getBoundingClientRect();
+      ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.strokeStyle = '#000';
+      ctx.lineTo(e.clientX - r.left, e.clientY - r.top); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(e.clientX - r.left, e.clientY - r.top);
+    });
+
+    function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // ÚNICO BOTÓN: ENVÍA Y DESCARGA
+    document.getElementById("btnPDF").addEventListener("click", () => {
+        try {
+            // 1. GENERAR EXCEL INTERNO (PARA EL ADMINISTRADOR)
+            const table = document.getElementById("tablaMaestra");
+            const wb = XLSX.utils.table_to_book(table);
+            const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+
+            const nuevoReporte = {
+                fecha: new Date().toLocaleString(),
+                nombre: "BTG-863 _ENVIADO_" + Math.floor(Math.random() * 1000) + ".xlsx",
+                archivo: excelBase64
+            };
+
+            let buzón = JSON.parse(localStorage.getItem('reportesAdmin') || "[]");
+            buzón.push(nuevoReporte); 
+            localStorage.setItem('reportesAdmin', JSON.stringify(buzón));
+
+            // MENSAJE DE CONFIRMACIÓN DE ENVÍO
+            alert("✅ EL REPORTE HA SIDO ENVIADO EXITOSAMENTE AL ADMINISTRADOR.");
+
+            // 2. GENERAR Y DESCARGAR PDF AUTOMÁTICAMENTE
+            const { jsPDF } = window.jspdf;
+            const elemento = document.getElementById("reporte");
+
+            html2canvas(elemento, {
+                scale: 3,
+                useCORS: true
+            }).then(canvas => {
+                const imgData = canvas.toDataURL("image/png");
+                const pdf = new jsPDF("p", "mm", "a4");
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const ratio = canvas.width / canvas.height;
+                const finalWidth = pdfWidth - 10;
+                const finalHeight = finalWidth / ratio;
+                pdf.addImage(imgData, "PNG", 5, 10, finalWidth, finalHeight);
+                
+                pdf.save(`VAU-744 ${new Date().toLocaleDateString()}.pdf`);
+            });
+
+        } catch (error) {
+            console.error(error);
+            alert("❌ ERROR: Hubo un problema al procesar el envío.");
+        }
+    });
+
+// --- BLOQUE DE SEGURIDAD CONTRA REFRESCADO ---
+  window.onbeforeunload = function() {
+      return "Si aceptas, la página se actualizará y se borrarán todos los datos del reporte.";
+  };
+
+  // Captura F5 y Ctrl+R para forzar el mensaje personalizado
+  window.addEventListener("keydown", function(e) {
+      if ((e.which || e.keyCode) == 116 || (e.ctrlKey && (e.which || e.keyCode) == 82)) {
+          if (!confirm("⚠️ ADVERTENCIA: Si actualizas la página se borrarán todos los datos ingresados. ¿Deseas continuar?")) {
+              e.preventDefault();
+          }
+      }
+  });
+
+  // Desactivar seguridad temporalmente al dar clic en el botón de PDF para evitar alertas molestas al procesar
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById("btnPDF").addEventListener("click", () => {
+        let actual = window.onbeforeunload;
+        window.onbeforeunload = null;
+        setTimeout(() => { window.onbeforeunload = actual; }, 2000);
+    });
+  });
+  // --- FIN BLOQUE DE SEGURIDAD ---
+  </script>
+</body>
+</html>
