@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Administrador GEOTEC - Control de Espacio</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; padding: 30px; color: #333; }
+        .contenedor { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        /* Indicador de Espacio */
+        .status-bar-container { background: #eee; border-radius: 10px; height: 20px; width: 100%; margin: 15px 0; overflow: hidden; border: 1px solid #ccc; }
+        .status-bar-fill { background: #27ae60; height: 100%; width: 0%; transition: width 0.5s; }
+        .status-text { font-weight: bold; font-size: 14px; margin-bottom: 5px; display: block; }
+
+        h1 { color: #003366; margin-top: 0; border-bottom: 3px solid #f9cd00; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #003366; color: white; }
+        
+        .btn-descargar { background: #27ae60; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+        .btn-eliminar { background: #e74c3c; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 15px; }
+        .btn-eliminar:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .alerta-espacio { color: #e74c3c; font-weight: bold; display: none; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h1>Buzón de Reportes - Geotec</h1>
+
+        <span class="status-text" id="statusText">Calculando espacio disponible...</span>
+        <div class="status-bar-container">
+            <div id="statusBar" class="status-bar-fill"></div>
+        </div>
+        <span id="alerta" class="alerta-espacio">⚠️ ¡ATENCIÓN! Te estás quedando sin espacio. Elimina reportes antiguos.</span>
+
+        <div style="margin-top: 20px;">
+            <button onclick="obtenerReportes()" style="padding: 10px; cursor: pointer;">🔄 Actualizar Lista</button>
+            <button id="btnBorrarVarios" class="btn-eliminar" onclick="borrarSeleccionados()" disabled>🗑️ Eliminar Seleccionados</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleTodos(this)"></th>
+                    <th>Fecha Envío</th>
+                    <th>Conductor</th>
+                    <th>Archivo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoAdmin">
+                <tr><td colspan="5">Cargando datos...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const URL_FIREBASE = "https://geotec-control-default-rtdb.firebaseio.com/reportes.json";
+        const LIMITE_MB = 1024; // 1GB = 1024MB
+
+        async function obtenerReportes() {
+            try {
+                const res = await fetch(URL_FIREBASE);
+                const datos = await res.json();
+                const tabla = document.getElementById('cuerpoAdmin');
+                
+                if (!datos) {
+                    tabla.innerHTML = "<tr><td colspan='5'>No hay reportes en la nube.</td></tr>";
+                    actualizarBarra(0);
+                    return;
+                }
+
+                // Calcular tamaño aproximado (en bytes)
+                const tamañoBytes = JSON.stringify(datos).length;
+                const tamañoMB = (tamañoBytes / (1024 * 1024)).toFixed(2);
+                actualizarBarra(tamañoMB);
+
+                tabla.innerHTML = "";
+                Object.keys(datos).reverse().forEach(id => {
+                    const r = datos[id];
+                    tabla.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" class="checkReporte" value="${id}" onclick="verificarSeleccion()"></td>
+                            <td>${r.fechaEnvio}</td>
+                            <td><strong>${r.conductor || 'N/A'}</strong></td>
+                            <td>${r.nombre}</td>
+                            <td>
+                                <button class="btn-descargar" onclick="descargarExcel('${r.archivo}', '${r.nombre}')">Excel</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (e) {
+                console.log("Error al cargar.");
+            }
+        }
+
+        function actualizarBarra(usadoMB) {
+            const porcentaje = (usadoMB / LIMITE_MB) * 100;
+            const bar = document.getElementById('statusBar');
+            const txt = document.getElementById('statusText');
+            const alerta = document.getElementById('alerta');
+
+            bar.style.width = porcentaje + "%";
+            txt.innerText = `Espacio Usado: ${usadoMB} MB de ${LIMITE_MB} MB (${porcentaje.toFixed(2)}%)`;
+
+            if (porcentaje > 80) {
+                bar.style.background = "#e67e22"; // Naranja
+                alerta.style.display = "block";
+            } else if (porcentaje > 95) {
+                bar.style.background = "#e74c3c"; // Rojo
+            } else {
+                bar.style.background = "#27ae60"; // Verde
+                alerta.style.display = "none";
+            }
+        }
+
+        function verificarSeleccion() {
+            const seleccionados = document.querySelectorAll('.checkReporte:checked').length;
+            document.getElementById('btnBorrarVarios').disabled = seleccionados === 0;
+        }
+
+        function toggleTodos(source) {
+            const checkboxes = document.querySelectorAll('.checkReporte');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            verificarSeleccion();
+        }
+
+        async function borrarSeleccionados() {
+            if (!confirm("¿Estás seguro de que quieres eliminar los reportes seleccionados? Esta acción no se puede deshacer.")) return;
+
+            const seleccionados = document.querySelectorAll('.checkReporte:checked');
+            
+            for (let cb of seleccionados) {
+                const id = cb.value;
+                // Eliminamos uno por uno de la base de datos
+                await fetch(`https://geotec-control-default-rtdb.firebaseio.com/reportes/${id}.json`, {
+                    method: 'DELETE'
+                });
+            }
+
+            alert("Reportes eliminados. El espacio se ha liberado.");
+            obtenerReportes();
+        }
+
+        function descargarExcel(base64, nombre) {
+            const link = document.createElement("a");
+            link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + base64;
+            link.download = nombre;
+            link.click();
+        }
+
+        obtenerReportes();
+        setInterval(obtenerReportes, 15000); // Actualiza cada 15 seg
+    </script>
+</body>
+</html>
