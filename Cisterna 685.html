@@ -763,51 +763,71 @@ const datosPorCodigo = {
 
     function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-    // ÚNICO BOTÓN: ENVÍA Y DESCARGA
-    document.getElementById("btnPDF").addEventListener("click", () => {
-        try {
-            // 1. GENERAR EXCEL INTERNO (PARA EL ADMINISTRADOR)
-            const table = document.getElementById("tablaMaestra");
-            const wb = XLSX.utils.table_to_book(table);
-            const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+    // ÚNICO BOTÓN: ENVÍA A LA NUBE Y DESCARGA PDF LOCAL
+document.getElementById("btnPDF").addEventListener("click", async () => {
+    // Definimos la URL de tu base de datos
+    const URL_FIREBASE = "https://geotec-control-default-rtdb.firebaseio.com/reportes.json";
+    const btn = document.getElementById("btnPDF");
 
-            const nuevoReporte = {
-                fecha: new Date().toLocaleString(),
-                nombre: "X6E-725 _ENVIADO_" + Math.floor(Math.random() * 1000) + ".xlsx",
-                archivo: excelBase64
-            };
+    try {
+        // Bloqueamos el botón momentáneamente para evitar doble envío
+        btn.disabled = true;
+        btn.innerText = "⏳ ENVIANDO A LA NUBE...";
 
-            let buzón = JSON.parse(localStorage.getItem('reportesAdmin') || "[]");
-            buzón.push(nuevoReporte); 
-            localStorage.setItem('reportesAdmin', JSON.stringify(buzón));
+        // 1. GENERAR EXCEL (PARA TU LAPTOP)
+        const table = document.getElementById("tablaMaestra");
+        const wb = XLSX.utils.table_to_book(table);
+        const excelBase64 = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
 
-            // MENSAJE DE CONFIRMACIÓN DE ENVÍO
-            alert("✅ EL REPORTE HA SIDO ENVIADO EXITOSAMENTE AL ADMINISTRADOR.");
+        // Preparamos los datos para la nube
+        const nuevoReporte = {
+            fechaEnvio: new Date().toLocaleString(),
+            conductor: document.getElementById('mainConductor') ? document.getElementById('mainConductor').value : "-",
+            nombre: "X6E-725 / 685"  + ".xlsx",
+            archivo: excelBase64
+        };
 
-            // 2. GENERAR Y DESCARGAR PDF AUTOMÁTICAMENTE
-            const { jsPDF } = window.jspdf;
-            const elemento = document.getElementById("reporte");
+        // 2. ENVÍO REAL A LA NUBE (FIREBASE)
+        const respuesta = await fetch(URL_FIREBASE, {
+            method: 'POST',
+            body: JSON.stringify(nuevoReporte)
+        });
 
-            html2canvas(elemento, {
-                scale: 3,
-                useCORS: true
-            }).then(canvas => {
-                const imgData = canvas.toDataURL("image/png");
-                const pdf = new jsPDF("p", "mm", "a4");
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const ratio = canvas.width / canvas.height;
-                const finalWidth = pdfWidth - 10;
-                const finalHeight = finalWidth / ratio;
-                pdf.addImage(imgData, "PNG", 5, 10, finalWidth, finalHeight);
-                
-                pdf.save(`VAU-744 ${new Date().toLocaleDateString()}.pdf`);
-            });
+        if (!respuesta.ok) throw new Error("Error en servidor");
 
-        } catch (error) {
-            console.error(error);
-            alert("❌ ERROR: Hubo un problema al procesar el envío.");
-        }
-    });
+        // MENSAJE DE ÉXITO
+        alert("✅ ENVIADO EXITOSAMENTE: El reporte ya está en tu laptop.");
+
+        // 3. GENERAR Y DESCARGAR PDF LOCALMENTE (Para el conductor)
+        const { jsPDF } = window.jspdf;
+        const elemento = document.getElementById("reporte");
+
+        html2canvas(elemento, {
+            scale: 3,
+            useCORS: true
+        }).then(canvas => {
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF("p", "mm", "a4");
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const ratio = canvas.width / canvas.height;
+            const finalWidth = pdfWidth - 10;
+            const finalHeight = finalWidth / ratio;
+            
+            pdf.addImage(imgData, "PNG", 5, 10, finalWidth, finalHeight);
+            pdf.save(`X6E-725_${new Date().toLocaleDateString()}.pdf`);
+            
+            // Restauramos el botón
+            btn.disabled = false;
+            btn.innerText = "📄 PDF / ENVIAR REPORTE";
+        });
+
+    } catch (error) {
+        console.error(error);
+        alert("❌ ERROR DE CONEXIÓN: Verifica tu internet. El reporte no llegó a la nube.");
+        btn.disabled = false;
+        btn.innerText = "📄 PDF / ENVIAR REPORTE";
+    }
+});
 
 // --- BLOQUE DE SEGURIDAD CONTRA REFRESCADO ---
   window.onbeforeunload = function() {
