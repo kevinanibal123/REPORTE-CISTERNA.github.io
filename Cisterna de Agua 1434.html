@@ -136,20 +136,21 @@
 
     <script>
         const cuerpo = document.getElementById('cuerpoTabla');
-        for(let i=0; i<10; i++) {
-            cuerpo.innerHTML += `
-                <tr>
-                    <td><input type="text" class="col-empresa" value="GEOTEC"></td>
-                    <td><input type="text" class="col-id" readonly></td>
-                    <td><input type="text" class="col-placa" readonly></td>
-                    <td><input type="text" class="col-fecha" readonly></td>
-                    <td><input type="text" class="col-turno" readonly></td>
-                    <td><input type="text" class="col-zona" readonly></td>
-                    <td><input type="number" class="galones" oninput="calcularTodo()"></td>
-                    <td><input type="text" placeholder="..."></td>
-                </tr>
-            `;
-        }
+
+for(let i=0; i<10; i++) {
+    cuerpo.innerHTML += `
+        <tr>
+            <td><input type="text" class="col-empresa" value="GEOTEC" oninput="this.value = this.value.toUpperCase()"></td>
+            <td><input type="text" class="col-id" readonly></td>
+            <td><input type="text" class="col-placa" readonly></td>
+            <td><input type="text" class="col-fecha" readonly></td>
+            <td><input type="text" class="col-turno" readonly></td>
+            <td><input type="text" placeholder="" oninput="this.value = this.value.toUpperCase()"></td>
+            <td><input type="number" class="galones" oninput="calcularTodo()"></td>
+            <td><input type="text" placeholder="" oninput="this.value = this.value.toUpperCase()"></td>
+        </tr>
+    `;
+}
 
         function sincronizar() {
             const fecha = document.getElementById('mainFecha').value;
