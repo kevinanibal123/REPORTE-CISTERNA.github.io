@@ -2,181 +2,157 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Administración - GEOTEC</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Panel Administrador GEOTEC - Control de Espacio</title>
     <style>
-        :root {
-            --azul-geotec: #003366;
-            --dorado-geotec: #f9cd00;
-            --gris-fondo: #ecf0f3;
-            --rojo-error: #dc3545;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #2c3e50; padding: 30px; color: #333; }
+        .contenedor { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        
+        /* Indicador de Espacio */
+        .status-bar-container { background: #eee; border-radius: 10px; height: 20px; width: 100%; margin: 15px 0; overflow: hidden; border: 1px solid #ccc; }
+        .status-bar-fill { background: #27ae60; height: 100%; width: 0%; transition: width 0.5s; }
+        .status-text { font-weight: bold; font-size: 14px; margin-bottom: 5px; display: block; }
 
-        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background-color: var(--gris-fondo); color: #333; }
-
-        .navbar {
-            background-color: var(--azul-geotec);
-            padding: 15px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .navbar h1 { font-size: 1.2rem; margin: 0; }
-        .btn-logout { background-color: var(--dorado-geotec); color: var(--azul-geotec); border: none; padding: 8px 15px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-
-        .main-container { width: 95%; max-width: 1000px; margin: 20px auto; padding: 0; }
-
-        .storage-box {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        .storage-header { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
-        .progress-bar-container { background: #eee; height: 12px; border-radius: 10px; overflow: hidden; }
-        #storageBar { height: 100%; width: 0%; background: #28a745; transition: 0.5s; }
-
-        .table-container { 
-            background: white; 
-            border-radius: 15px; 
-            overflow-x: auto; /* Permite scroll solo si la tabla es muy ancha */
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
-        }
-
-        table { width: 100%; border-collapse: collapse; min-width: 500px; /* Asegura que no se amontone en pantallas muy chicas */ }
-        th { background-color: #f8f9fa; color: var(--azul-geotec); padding: 12px; text-align: left; font-size: 14px; border-bottom: 2px solid #eee; }
-        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 13px; }
-
-        /* Botones de Acción optimizados para clic táctil */
-        .btn-download { background-color: #28a745; color: white; padding: 10px 14px; border-radius: 5px; text-decoration: none; border: none; cursor: pointer; display: inline-block; margin-bottom: 5px; }
-        .btn-delete { background-color: var(--rojo-error); color: white; padding: 10px 14px; border-radius: 5px; border: none; cursor: pointer; display: inline-block; }
-
-        .empty-state { text-align: center; padding: 40px; color: #999; }
-
-        /* Ajustes específicos para móviles */
-        @media (max-width: 600px) {
-            .navbar { padding: 10px; }
-            .navbar h1 { font-size: 1rem; }
-            th, td { padding: 10px 8px; }
-            .btn-download, .btn-delete { padding: 8px 10px; font-size: 12px; }
-        }
+        h1 { color: #003366; margin-top: 0; border-bottom: 3px solid #f9cd00; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #003366; color: white; }
+        
+        .btn-descargar { background: #27ae60; color: white; border: none; padding: 8px 12px; cursor: pointer; border-radius: 4px; }
+        .btn-eliminar { background: #e74c3c; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; margin-top: 15px; }
+        .btn-eliminar:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .alerta-espacio { color: #e74c3c; font-weight: bold; display: none; margin-top: 5px; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <h1>GEOTEC <span style="color: var(--dorado-geotec)">ADMIN</span></h1>
-        <button class="btn-logout" onclick="cerrarSesion()">Salir</button>
-    </nav>
+    <div class="contenedor">
+        <h1>Buzón de Reportes - Geotec</h1>
 
-    <div class="main-container">
-        <div class="storage-box">
-            <div class="storage-header">
-                <span><i class="fas fa-database"></i> Capacidad (Máx 5MB)</span>
-                <span id="storageText">0% usado</span>
-            </div>
-            <div class="progress-bar-container">
-                <div id="storageBar"></div>
-            </div>
+        <span class="status-text" id="statusText">Calculando espacio disponible...</span>
+        <div class="status-bar-container">
+            <div id="statusBar" class="status-bar-fill"></div>
+        </div>
+        <span id="alerta" class="alerta-espacio">⚠️ ¡ATENCIÓN! Te estás quedando sin espacio. Elimina reportes antiguos.</span>
+
+        <div style="margin-top: 20px;">
+            <button onclick="obtenerReportes()" style="padding: 10px; cursor: pointer;">🔄 Actualizar Lista</button>
+            <button id="btnBorrarVarios" class="btn-eliminar" onclick="borrarSeleccionados()" disabled>🗑️ Eliminar Seleccionados</button>
         </div>
 
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Nombre del Reporte</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-            </table>
-            <div id="mensajeVacio" class="empty-state" style="display: none;">
-                <i class="fas fa-folder-open fa-2x"></i>
-                <p>Sin reportes.</p>
-            </div>
-        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="selectAll" onclick="toggleTodos(this)"></th>
+                    <th>Fecha Envío</th>
+                    <th>Conductor</th>
+                    <th>Archivo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoAdmin">
+                <tr><td colspan="5">Cargando datos...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <script>
-        if (sessionStorage.getItem("adminValido") !== "true") { window.location.href = "index.html"; }
+        const URL_FIREBASE = "https://geotec-control-default-rtdb.firebaseio.com/reportes.json";
+        const LIMITE_MB = 1024; // 1GB = 1024MB
 
-        function cerrarSesion() { sessionStorage.removeItem("adminValido"); window.location.href = "index.html"; }
+        async function obtenerReportes() {
+            try {
+                const res = await fetch(URL_FIREBASE);
+                const datos = await res.json();
+                const tabla = document.getElementById('cuerpoAdmin');
+                
+                if (!datos) {
+                    tabla.innerHTML = "<tr><td colspan='5'>No hay reportes en la nube.</td></tr>";
+                    actualizarBarra(0);
+                    return;
+                }
 
-        function actualizarBarraCarga() {
-            const datos = localStorage.getItem('reportesAdmin') || "";
-            const tamañoBytes = new Blob([datos]).size;
-            const limiteMax = 5 * 1024 * 1024;
-            const porcentaje = ((tamañoBytes / limiteMax) * 100).toFixed(1);
+                // Calcular tamaño aproximado (en bytes)
+                const tamañoBytes = JSON.stringify(datos).length;
+                const tamañoMB = (tamañoBytes / (1024 * 1024)).toFixed(2);
+                actualizarBarra(tamañoMB);
 
-            const barra = document.getElementById('storageBar');
-            const texto = document.getElementById('storageText');
-
-            barra.style.width = porcentaje + "%";
-            texto.innerText = porcentaje + "% usado";
-
-            if (porcentaje > 80) barra.style.background = "#dc3545";
-            else if (porcentaje > 50) barra.style.background = "#ffc107";
-            else barra.style.background = "#28a745";
-        }
-
-        function cargarReportes() {
-            const reportes = JSON.parse(localStorage.getItem('reportesAdmin') || "[]");
-            const tabla = document.getElementById('cuerpoTabla');
-            const mensajeVacio = document.getElementById('mensajeVacio');
-
-            actualizarBarraCarga();
-
-            if (reportes.length === 0) {
                 tabla.innerHTML = "";
-                mensajeVacio.style.display = 'block';
-                return;
+                Object.keys(datos).reverse().forEach(id => {
+                    const r = datos[id];
+                    tabla.innerHTML += `
+                        <tr>
+                            <td><input type="checkbox" class="checkReporte" value="${id}" onclick="verificarSeleccion()"></td>
+                            <td>${r.fechaEnvio}</td>
+                            <td><strong>${r.conductor || 'N/A'}</strong></td>
+                            <td>${r.nombre}</td>
+                            <td>
+                                <button class="btn-descargar" onclick="descargarExcel('${r.archivo}', '${r.nombre}')">Excel</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (e) {
+                console.log("Error al cargar.");
             }
+        }
 
-            mensajeVacio.style.display = 'none';
-            tabla.innerHTML = "";
+        function actualizarBarra(usadoMB) {
+            const porcentaje = (usadoMB / LIMITE_MB) * 100;
+            const bar = document.getElementById('statusBar');
+            const txt = document.getElementById('statusText');
+            const alerta = document.getElementById('alerta');
+
+            bar.style.width = porcentaje + "%";
+            txt.innerText = `Espacio Usado: ${usadoMB} MB de ${LIMITE_MB} MB (${porcentaje.toFixed(2)}%)`;
+
+            if (porcentaje > 80) {
+                bar.style.background = "#e67e22"; // Naranja
+                alerta.style.display = "block";
+            } else if (porcentaje > 95) {
+                bar.style.background = "#e74c3c"; // Rojo
+            } else {
+                bar.style.background = "#27ae60"; // Verde
+                alerta.style.display = "none";
+            }
+        }
+
+        function verificarSeleccion() {
+            const seleccionados = document.querySelectorAll('.checkReporte:checked').length;
+            document.getElementById('btnBorrarVarios').disabled = seleccionados === 0;
+        }
+
+        function toggleTodos(source) {
+            const checkboxes = document.querySelectorAll('.checkReporte');
+            checkboxes.forEach(cb => cb.checked = source.checked);
+            verificarSeleccion();
+        }
+
+        async function borrarSeleccionados() {
+            if (!confirm("¿Estás seguro de que quieres eliminar los reportes seleccionados? Esta acción no se puede deshacer.")) return;
+
+            const seleccionados = document.querySelectorAll('.checkReporte:checked');
             
-            reportes.slice().reverse().forEach((rep) => {
-                const fila = `
-                    <tr>
-                        <td>${rep.fecha}</td>
-                        <td>${rep.nombre}</td>
-                        <td style="white-space: nowrap;">
-                            <button onclick="descargarArchivo('${rep.archivo}', '${rep.nombre}')" class="btn-download">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button onclick="eliminarReporte('${rep.nombre}')" class="btn-delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-                tabla.innerHTML += fila;
-            });
-        }
-
-        function eliminarReporte(nombreArchivo) {
-            if (confirm("¿Eliminar reporte?")) {
-                let reportes = JSON.parse(localStorage.getItem('reportesAdmin') || "[]");
-                reportes = reportes.filter(r => r.nombre !== nombreArchivo);
-                localStorage.setItem('reportesAdmin', JSON.stringify(reportes));
-                cargarReportes();
+            for (let cb of seleccionados) {
+                const id = cb.value;
+                // Eliminamos uno por uno de la base de datos
+                await fetch(`https://geotec-control-default-rtdb.firebaseio.com/reportes/${id}.json`, {
+                    method: 'DELETE'
+                });
             }
+
+            alert("Reportes eliminados. El espacio se ha liberado.");
+            obtenerReportes();
         }
 
-        function descargarArchivo(base64, nombre) {
+        function descargarExcel(base64, nombre) {
             const link = document.createElement("a");
             link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + base64;
             link.download = nombre;
             link.click();
         }
 
-        window.onload = cargarReportes;
+        obtenerReportes();
+        setInterval(obtenerReportes, 15000); // Actualiza cada 15 seg
     </script>
 </body>
 </html>
