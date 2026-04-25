@@ -6,37 +6,20 @@
     <title>Control de Agua - Cisterna de Agua 1309</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background-color: #ecf0f3;
-            color: #003366;
-            min-width: 1200px;
-        }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background-color: #ecf0f3; color: #003366; min-width: 1200px; }
         h1 { text-align: center; margin: 10px 0; font-size: 24px; }
         .buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }
-        .btn {
-            background-color: #f9cd00; color: white; padding: 12px 20px;
-            border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold;
-        }
-        #reporte {
-            width: 1150px; margin: auto; background: white; padding: 20px; box-sizing: border-box;
-        }
+        .btn { background-color: #f9cd00; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        #reporte { width: 1150px; margin: auto; background: white; padding: 20px; box-sizing: border-box; }
         table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed; }
         th, td { border: 1px solid #aaa; padding: 6px; text-align: left; }
         th { background-color: #dde6f3; }
-        input, select, textarea {
-            width: 100%; font-size: 11px !important; border: none;
-            background: transparent; color: #003366; height: 25px;
-        }
+        input, select, textarea { width: 100%; font-size: 11px !important; border: none; background: transparent; color: #003366; height: 25px; }
         input[readonly] { background-color: #f0f0f0; }
-        
-        @media print {
-            .buttons, button { display: none !important; }
-            body { min-width: 100%; }
-            #reporte { width: 100%; border: none; }
-        }
+        @media print { .buttons, button { display: none !important; } body { min-width: 100%; } #reporte { width: 100%; border: none; } }
     </style>
 </head>
 <body>
@@ -44,7 +27,7 @@
     <h1>💧 Reporte Cisterna de Agua - 1309</h1>
 
     <div class="buttons">
-        <button class="btn" id="btnPDF">📄 PDF / ENVIAR REPORTE</button>
+        <button class="btn" id="btnPDF">📄 PDF / ENVIAR REPORTE A LAPTOP</button>
         <button class="btn" style="background-color: #003366;" onclick="window.location.href='panelagua.html'">🔙 VOLVER</button>
     </div>
 
@@ -59,7 +42,7 @@
             <table style="width: 100%; max-width: 400px;">
                 <tr>
                     <th style="width: 40%;">CONDUCTOR</th>
-                    <td><input type="text" id="mainConductor" oninput="sincronizar()"></td>
+                    <td><input type="text" id="mainConductor" oninput="this.value = this.value.toUpperCase(); sincronizar()"></td>
                 </tr>
                 <tr>
                     <th>FECHA</th>
@@ -67,7 +50,7 @@
                 </tr>
                 <tr>
                     <th>ZONA</th>
-                    <td><input type="text" id="mainZona" oninput="sincronizar()"></td>
+                    <td><input type="text" id="mainZona" oninput="this.value = this.value.toUpperCase(); sincronizar()"></td>
                 </tr>
             </table>
 
@@ -75,7 +58,7 @@
                 <tr>
                     <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">TURNO</th>
                     <td style="border: 1px solid #aaa;">
-                        <select id="mainTurno" onchange="sincronizar()" style="width: 100%; height: 40px; display: block; border: none; background: transparent; text-align: center;">
+                        <select id="mainTurno" onchange="sincronizar()">
                             <option value="DIA">DIA</option>
                             <option value="NOCHE">NOCHE</option>
                         </select>
@@ -84,42 +67,33 @@
                 <tr>
                     <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">PLACA</th>
                     <td style="border: 1px solid #aaa;">
-                        <input type="text" id="mainPlaca" oninput="sincronizar()" style="text-align: center; height: 40px; width: 100%; display: block; border: none; background: transparent;">
+                        <input type="text" id="mainPlaca" readonly style="text-align: center;">
                     </td>
                 </tr>
                 <tr>
                     <th style="text-align: left; border: 1px solid #aaa; padding: 15px 8px;">CODIGO CISTERNA</th>
                     <td style="border: 1px solid #aaa;">
-                        <input type="text" id="mainID" oninput="sincronizar()" style="text-align: center; height: 40px; width: 100%; display: block; border: none; background: transparent;">
+                        <input type="text" id="mainID" oninput="sincronizar()" style="text-align: center;">
                     </td>
                 </tr>
             </table>
         </div>
 
-        <div class="scroll-x">
-            <table id="tablaEntregas">
-                <thead>
-                    <tr>
-                        <th style="text-align: center;">Empresa</th>
-                        <th style="text-align: center;">Codigo</th>
-                        <th style="text-align: center;">Placa</th>
-                        <th style="text-align: center;">Fecha</th>
-                        <th style="text-align: center;">Turno</th>
-                        <th style="text-align: center;">Procedencia</th>
-                        <th style="text-align: center;">Cant. Entregada</th>
-                        <th style="text-align: center;">Comentarios / Destino</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="6" style="text-align: right; font-weight: bold; background:#eee;">TOTAL GALONES ENTREGADOS</td>
-                        <td style="background:#fffef5;"><input type="number" id="totalEntregado" readonly style="font-weight:bold;"></td>
-                        <td style="background:#eee;"></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
+        <table id="tablaEntregas">
+            <thead>
+                <tr>
+                    <th>Empresa</th><th>Codigo</th><th>Placa</th><th>Fecha</th><th>Turno</th><th>Procedencia</th><th>Cant. Entregada</th><th>Comentarios / Destino</th>
+                </tr>
+            </thead>
+            <tbody id="cuerpoTabla"></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6" style="text-align: right; font-weight: bold; background:#eee;">TOTAL GALONES ENTREGADOS</td>
+                    <td style="background:#fffef5;"><input type="number" id="totalEntregado" readonly style="font-weight:bold;"></td>
+                    <td style="background:#eee;"></td>
+                </tr>
+            </tfoot>
+        </table>
 
         <div style="display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start;">
             <div style="width: 60%;">
@@ -135,55 +109,40 @@
     </div>
 
     <script>
-        const cuerpo = document.getElementById('cuerpoTabla');
+        const URL_FIREBASE = "https://geotec-control-default-rtdb.firebaseio.com/reportes.json";
 
-for(let i=0; i<10; i++) {
-    cuerpo.innerHTML += `
-        <tr>
-            <td><input type="text" class="col-empresa" value="GEOTEC" oninput="this.value = this.value.toUpperCase()"></td>
-            <td><input type="text" class="col-id" readonly></td>
-            <td><input type="text" class="col-placa" readonly></td>
-            <td><input type="text" class="col-fecha" readonly></td>
-            <td><input type="text" class="col-turno" readonly></td>
-            <td><input type="text" placeholder="" oninput="this.value = this.value.toUpperCase()"></td>
-            <td><input type="number" class="galones" oninput="calcularTodo()"></td>
-            <td><input type="text" placeholder="" oninput="this.value = this.value.toUpperCase()"></td>
-        </tr>
-    `;
-}
+        // 1. ALERTA DE SEGURIDAD (Si intentan actualizar, sale el mensaje del navegador)
+        window.onbeforeunload = function() {
+            return "¿Deseas salir? Si no has enviado el reporte, los datos se borrarán.";
+        };
+
+        // Generar 15 filas
+        const cuerpo = document.getElementById('cuerpoTabla');
+        for(let i=0; i<15; i++) {
+            cuerpo.innerHTML += `
+                <tr>
+                    <td><input type="text" value="GEOTEC" oninput="this.value = this.value.toUpperCase()"></td>
+                    <td><input type="text" class="col-id" readonly></td>
+                    <td><input type="text" class="col-placa" readonly></td>
+                    <td><input type="text" class="col-fecha" readonly></td>
+                    <td><input type="text" class="col-turno" readonly></td>
+                    <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+                    <td><input type="number" class="galones" oninput="calcularTodo()"></td>
+                    <td><input type="text" oninput="this.value = this.value.toUpperCase()"></td>
+                </tr>`;
+        }
 
         function sincronizar() {
-            const fecha = document.getElementById('mainFecha').value;
-            const turno = document.getElementById('mainTurno').value;
-            const zona = document.getElementById('mainZona').value.toUpperCase();
-            const codigo = document.getElementById('mainID').value.trim();
-
-            const basePlacas = {
-                "1309": "VDH-880",
-                "2313": "VDI-825",
-                "2319": "VBQ-991",
-                "821": "BUZ-873",
-                "1434": "BUZ-874",
-                "823": "VBO-933"
-            };
-
-            // Lógica corregida: Si el código existe se pone la placa, sino se queda vacío
-            if (basePlacas[codigo]) {
-                document.getElementById('mainPlaca').value = basePlacas[codigo];
-            } else {
-                document.getElementById('mainPlaca').value = "";
-            }
-
-            const placa = document.getElementById('mainPlaca').value.toUpperCase();
-
-            document.querySelectorAll('.col-fecha').forEach(i => i.value = fecha);
-            document.querySelectorAll('.col-turno').forEach(i => i.value = turno);
-            document.querySelectorAll('.col-zona').forEach(i => i.value = zona);
-            document.querySelectorAll('.col-placa').forEach(i => i.value = placa);
-            document.querySelectorAll('.col-id').forEach(i => i.value = codigo.toUpperCase());
-            
-            document.getElementById('mainConductor').value = document.getElementById('mainConductor').value.toUpperCase();
-            document.getElementById('mainZona').value = document.getElementById('mainZona').value.toUpperCase();
+            const f = document.getElementById('mainFecha').value;
+            const t = document.getElementById('mainTurno').value;
+            const id = document.getElementById('mainID').value.trim();
+            const placas = { "1309": "VDH-880", "2313": "VDI-825", "2319": "VBQ-991", "821": "BUZ-873", "1434": "BUZ-874", "823": "VBO-933" };
+            const p = placas[id] || "";
+            document.getElementById('mainPlaca').value = p;
+            document.querySelectorAll('.col-fecha').forEach(i => i.value = f);
+            document.querySelectorAll('.col-turno').forEach(i => i.value = t);
+            document.querySelectorAll('.col-placa').forEach(i => i.value = p);
+            document.querySelectorAll('.col-id').forEach(i => i.value = id.toUpperCase());
         }
 
         function calcularTodo() {
@@ -192,56 +151,41 @@ for(let i=0; i<10; i++) {
             document.getElementById('totalEntregado').value = total.toFixed(2);
         }
 
+        // Firma
         const canvas = document.getElementById('firmaCanvas');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
-        const eventos = (e) => {
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-            const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+        const pos = (e) => {
+            const r = canvas.getBoundingClientRect();
+            const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+            const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
             return {x, y};
         }
-        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(eventos(e).x, eventos(e).y); });
-        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(eventos(e).x, eventos(e).y); ctx.stroke(); } });
+        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(pos(e).x, pos(e).y); });
+        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(pos(e).x, pos(e).y); ctx.stroke(); } });
         window.addEventListener('mouseup', () => dibujando = false);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); dibujando = true; ctx.beginPath(); ctx.moveTo(eventos(e).x, eventos(e).y); });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(dibujando) { ctx.lineTo(eventos(e).x, eventos(e).y); ctx.stroke(); } });
         function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
 
-        document.getElementById("btnPDF").addEventListener("click", () => {
-            const { jsPDF } = window.jspdf;
-            html2canvas(document.getElementById("reporte"), { scale: 2 }).then(canvas => {
-                const imgData = canvas.toDataURL("image/png");
-                const pdf = new jsPDF("l", "mm", "a4");
-                const width = pdf.internal.pageSize.getWidth();
-                const height = (canvas.height * width) / canvas.width;
-                pdf.addImage(imgData, "PNG", 0, 5, width, height);
-                pdf.save(`Reporte_Agua_1309_${document.getElementById('mainFecha').value}.pdf`);
-            });
-        });
+        // Envío a Firebase y PDF
+        document.getElementById("btnPDF").addEventListener("click", async () => {
+            try {
+                const excelBase64 = XLSX.write(XLSX.utils.table_to_book(document.getElementById("tablaEntregas")), { bookType: 'xlsx', type: 'base64' });
+                const reporte = {
+                    fechaEnvio: new Date().toLocaleString(),
+                    conductor: document.getElementById('mainConductor').value,
+                    nombre: `CIST-1309${document.getElementById('mainID').value}_${document.getElementById('mainFecha').value}.xlsx`,
+                    archivo: excelBase64
+                };
 
-        document.getElementById('mainFecha').value = new Date().toISOString().split('T')[0];
-        sincronizar();
+                await fetch(URL_FIREBASE, { method: 'POST', body: JSON.stringify(reporte) });
+                alert("✅ ENVIADO");
 
-        // SEGURIDAD
-        window.onbeforeunload = function() {
-            return "Si aceptas, la página se actualizará y se borrarán todos los datos del reporte.";
-        };
-
-        window.addEventListener("keydown", function(e) {
-            if ((e.which || e.keyCode) == 116 || (e.ctrlKey && (e.which || e.keyCode) == 82)) {
-                if (!confirm("⚠️ ADVERTENCIA: Si actualizas la página se borrarán todos los datos ingresados. ¿Deseas continuar?")) {
-                    e.preventDefault();
-                }
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById("btnPDF").addEventListener("click", () => {
-                let actual = window.onbeforeunload;
-                window.onbeforeunload = null;
-                setTimeout(() => { window.onbeforeunload = actual; }, 2000);
-            });
+                html2canvas(document.getElementById("reporte")).then(canvas => {
+                    const pdf = new jspdf.jsPDF("l", "mm", "a4");
+                    pdf.addImage(canvas.toDataURL("image/png"), "PNG", 5, 5, 287, 150);
+                    pdf.save(reporte.nombre.replace(".xlsx", ".pdf"));
+                });
+            } catch (e) { alert("❌ Error de red."); }
         });
     </script>
 </body>
