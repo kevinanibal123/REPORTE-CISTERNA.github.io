@@ -151,20 +151,62 @@
             document.getElementById('totalEntregado').value = total.toFixed(2);
         }
 
-        // Firma
+        // --- BLOQUE DE FIRMA CORREGIDO (PC Y CELULAR) ---
         const canvas = document.getElementById('firmaCanvas');
         const ctx = canvas.getContext('2d');
         let dibujando = false;
+
         const pos = (e) => {
             const r = canvas.getBoundingClientRect();
-            const x = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
-            const y = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
-            return {x, y};
+            // Detecta si es toque (celular) o click (PC)
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - r.left,
+                y: clientY - r.top
+            };
         }
-        canvas.addEventListener('mousedown', (e) => { dibujando = true; ctx.beginPath(); ctx.moveTo(pos(e).x, pos(e).y); });
-        canvas.addEventListener('mousemove', (e) => { if(dibujando) { ctx.lineTo(pos(e).x, pos(e).y); ctx.stroke(); } });
+
+        // Eventos para PC (Mouse)
+        canvas.addEventListener('mousedown', (e) => { 
+            dibujando = true; 
+            ctx.beginPath(); 
+            ctx.moveTo(pos(e).x, pos(e).y); 
+        });
+        canvas.addEventListener('mousemove', (e) => { 
+            if(dibujando) { 
+                ctx.lineTo(pos(e).x, pos(e).y); 
+                ctx.stroke(); 
+            } 
+        });
         window.addEventListener('mouseup', () => dibujando = false);
-        function limpiarFirma() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+        // Eventos para Celular (Touch)
+        canvas.addEventListener('touchstart', (e) => {
+            const p = pos(e);
+            dibujando = true;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            e.preventDefault(); // Evita que la pantalla se mueva al firmar
+        }, { passive: false });
+
+        canvas.addEventListener('touchmove', (e) => {
+            if (dibujando) {
+                const p = pos(e);
+                ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+                e.preventDefault(); // Evita que la pantalla se mueva al firmar
+            }
+        }, { passive: false });
+
+        canvas.addEventListener('touchend', () => {
+            dibujando = false;
+        });
+
+        function limpiarFirma() { 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+        }
+        // --- FIN BLOQUE DE FIRMA ---
 
         // Envío a Firebase y PDF
         document.getElementById("btnPDF").addEventListener("click", async () => {
