@@ -746,6 +746,8 @@ const datosPorCodigo = {
       document.getElementById('stockFinal').value = (stIni - tCon).toFixed(2);
     }
 
+    document.addEventListener('input', calcularTodoElStock);
+
     // --- BLOQUE DE FIRMA CORREGIDO (PC Y CELULAR) ---
         const canvas = document.getElementById('firmaCanvas');
         const ctx = canvas.getContext('2d');
